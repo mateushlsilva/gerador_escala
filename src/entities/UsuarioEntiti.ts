@@ -1,6 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate, OneToMany, ManyToMany, ManyToOne } from "typeorm";
 import * as bcrypt from "bcrypt";
 
+enum UserType {
+    ADM = 0,
+    MC = 1,
+    COROINHA = 2
+}
 
 @Entity({ name: "usuarios" })
 export default class Usuario {
@@ -14,7 +19,14 @@ export default class Usuario {
     @Column({ nullable: false, select: false, length: 100 })
     userPassword: string;
 
-    // Colocar os campos da tabela
+    @Column({ nullable: true, default: false })
+    userTN: boolean;
+
+    @Column({ type: "enum", enum: UserType, default: UserType.COROINHA })
+    userType: UserType;
+
+    @Column({ nullable: true, length: 100, unique: true })
+    userName: string;
 
     @BeforeInsert() //a função hashPassword é disparada antes do insert e update
     @BeforeUpdate()
