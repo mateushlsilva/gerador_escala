@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate, OneToMany, ManyToMany, ManyToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate, OneToMany, ManyToMany, ManyToOne, JoinColumn } from "typeorm";
 import * as bcrypt from "bcrypt";
 
 enum UserType {
@@ -27,6 +27,12 @@ export default class Usuario {
 
     @Column({ nullable: true, length: 100, unique: true })
     userName: string;
+
+    @ManyToOne(() => Usuario, (usuario) => usuario.usuariosGerenciados, { nullable: true })
+    @JoinColumn({ name: "admin_id" }) // Nome da coluna no banco de dados
+    admin: Usuario;
+
+    usuariosGerenciados?: Usuario[];
 
     @BeforeInsert() //a função hashPassword é disparada antes do insert e update
     @BeforeUpdate()

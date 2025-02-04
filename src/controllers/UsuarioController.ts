@@ -3,6 +3,11 @@ import { Request, Response } from 'express';
 import { Usuario } from '../entities';
 import { generateToken } from '../middlewares';
 
+enum UserType {
+  ADM = 0,
+  MC = 1,
+  COROINHA = 2
+}
 class UsuarioController {
   public async login(req: Request, res: Response): Promise<Response> {
     const { userEmail, userPassword } = req.body;
@@ -68,17 +73,44 @@ class UsuarioController {
 
   public async postUser(req: Request, res: Response): Promise<Response> {
     try{
-
+        const rep = AppDataSource.getRepository(Usuario)
+        const { userEmail, userPassword, userTN, userType, userName, admin } = req.body
+        const novoUsuario = new Usuario()
+        if (userType === UserType.ADM) {
+          novoUsuario.userEmail = userEmail
+          novoUsuario.userPassword = userPassword 
+        }
+        novoUsuario.userTN = userTN
+        novoUsuario.userName = userName
+        novoUsuario.admin = admin
+        novoUsuario.userType = userType
+        const save = await rep.save(novoUsuario)
+        return res.status(200).json({erro: false, menssagem: "Usuario criado!", usuario: save})
     }catch(err){
-        return res.status(400).json({erro: true, menssagem: "Erro ao mudar a senha!"})
-    }
-   
+      console.log(err);
+      
+        return res.status(400).json({erro: true, menssagem: "Erro ao criar!"})
+    } 
   }
 
   public async putUser(req: Request, res: Response): Promise<Response> {
     try{
-
+      const rep = AppDataSource.getRepository(Usuario)
+      const idUsuario: any = req.params.uuid
+      const { userEmail, userPassword, userTN, userType, userName, admin } = req.body
+      const findUsuario = await rep.findOneBy({ id: idUsuario })
+      if (userType === UserType.ADM) {
+        findUsuario.userEmail = userEmail
+        findUsuario.userPassword = userPassword 
+      }
+      findUsuario.userTN = userTN
+      findUsuario.userName = userName
+      findUsuario.admin = admin
+      findUsuario.userType = userType
+      const save = await rep.save(findUsuario)
+      return res.status(200).json({erro: false, menssagem: "Usuario criado!", usuario: save})
     }catch(err){
+      console.log(err);
         return res.status(400).json({erro: true, menssagem: "Erro ao mudar a senha!"})
     }
   }
@@ -87,9 +119,13 @@ class UsuarioController {
 
   public async deleteUser(req: Request, res: Response): Promise<Response> {
     try{
-
+      const idUser: any = req.params.uuid
+      const userRepository = AppDataSource.getRepository(Usuario)
+      const findUser = await userRepository.findOneBy({ id: idUser })
+      const allUser = await userRepository.remove(findUser)
+      return res.status(200).json({erro: false, menssagem: "Usuario deletado!", usuario: allUser})
     }catch(err){
-        return res.status(400).json({erro: true, menssagem: "Erro ao mudar a senha!"})
+        return res.status(400).json({erro: true, menssagem: "Erro ao deletar!"})
     }
   }
 
